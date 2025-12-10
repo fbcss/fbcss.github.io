@@ -222,7 +222,7 @@ for pl in playlists:
                 "--output-json",
                 "-of", "output"
             ]
-            subprocess.run([exe_path] + args, capture_output=True, text=True)
+            subprocess.run([whisper_path] + args)
 
             with open("output.json", "r") as json_file:
                 video_transcript = json.load(json_file)
