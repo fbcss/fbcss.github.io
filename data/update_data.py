@@ -7,6 +7,8 @@ import subprocess
 
 API_KEY = os.environ["API_KEY"]
 CHANNEL_ID = "UC6yzBy1Cof8rKcPQtx1XxKQ"
+GOOGLE_EMAIL = os.environ["GOOGLE_EMAIL"]
+GOOGLE_PASSWORD = os.environ["GOOGLE_PASSWORD"]
 
 script_path = os.path.dirname(__file__)
 bible_books = (
@@ -200,6 +202,8 @@ for pl in playlists:
                 video_container = transcripts["other"]
 
             ydl_opts = {
+                "username": GOOGLE_EMAIL,
+                "password": GOOGLE_PASSWORD,
                 "outtmpl": os.path.join(os.getcwd(), "input.%(ext)s"),
                 "format": "bestaudio/best",
                 "postprocessors": [{
