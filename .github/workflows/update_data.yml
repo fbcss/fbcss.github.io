@@ -17,7 +17,7 @@ jobs:
       - name: Install necessary tools
         run: |
           sudo apt update && sudo apt install build-essential ffmpeg cmake
-          pip install yt-dlp
+          pip install yt-dlp requests
 
       - name: Clone whisper.cpp
         run: git clone https://github.com/ggerganov/whisper.cpp
