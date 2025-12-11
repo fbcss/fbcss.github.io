@@ -281,16 +281,6 @@ const loadContents = () => {
                     ) {
                         enteredCount++;
                         totalLoadedContents++;
-                        const totalSeconds = Math.floor(instance[0]);
-                        const hours = Math.floor(totalSeconds / 3600);
-                        const minutes = Math.floor((totalSeconds % 3600) / 60);
-                        const seconds = totalSeconds % 60;
-                        const pH = String(hours).padStart(2, "0");
-                        const pM = String(minutes).padStart(2, "0");
-                        const pS = String(seconds).padStart(2, "0");
-                        const timestamp = `${
-                            pH !== "00" ? pH + ":" : ""
-                        }${pM}:${pS}`;
                         const highlightedLine = instance[1]
                             .replace(/[^a-zA-Z0-9 ]/g, "")
                             .replace(
@@ -302,8 +292,8 @@ const loadContents = () => {
                                 <div onclick="miniplayerLoad('${el.id}', ${
                             instance[0]
                         })" class="time" style="${
-                            pH !== "00" ? "font-size: 13px;" : ""
-                        }">${timestamp}</div>
+                            instance[0].split(":").length - 1 === 1 ? "font-size: 13px;" : ""
+                        }">${instance[0]}</div>
                                 <div class="line">
                                     ${highlightedLine}
                                 </div>
@@ -828,11 +818,12 @@ const miniplayerLoad = async (id, timestamp) => {
     const miniplayer = document.getElementById("miniplayer");
     const video = document.getElementById("video");
 
-    const fT = Math.floor(timestamp);
+    const timeSegments = timestamp.split(":");
+    const formattedTimestamp = `${timeSegments[0]}h${timeSegments[1]}m${timeSegments[2]}`;
 
     miniplayer.style.display = "block";
     document.getElementById("skeleton").style.display = "none";
-    video.src = `https://www.youtube.com/embed/${id}?autoplay=1&start=${fT}&enablejsapi=1`;
+    video.src = `https://www.youtube.com/embed/${id}?autoplay=1&t=${formattedTimestamp}&enablejsapi=1`;
 };
 
 const closeMiniplayer = () => {
