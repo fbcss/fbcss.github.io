@@ -1,7 +1,6 @@
 // Patent pending, no duplicates.
 
-const prefix = "https://cosmocreeper.github.io/fbcss/data/";
-const suffix = ".json";
+const transcriptsUrl = "https://raw.githubusercontent.com/fbcss/fbcss/main/data/transcripts.json";
 
 const searchBar = document.getElementById("searchbar");
 const contents = document.getElementById("contents");
@@ -26,7 +25,6 @@ var firstScriptTag = document.getElementsByTagName("script")[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 uploadContent.style.height = "150px";
-booksContent.style.height = "300px";
 sortContent.style.height = "160px";
 
 document.getElementById("start-date").value = "";
@@ -45,24 +43,31 @@ const checkComponent = `
 let page = 0;
 let results = [];
 
-let pastors = { rob: false, mark: false, greg: false, guests: false };
-let books = [
-    [
-        ["Ruth", false, ""],
-        ["1 Samuel", false, ""],
-	["Jonah", false, ""],
-        ["Jeremiah", false, ""],
+let testaments = {
+    old: [
+        "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy",
+        "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings",
+        "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah",
+        "Esther", "Job", "Psalms", "Proverbs", "Ecclesiastes", "Song of Solomon",
+        "Isaiah", "Jeremiah", "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel",
+        "Amos", "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai",
+        "Zechariah", "Malachi"
     ],
-    [
-        ["Luke", false, ""],
-		["Acts", false, ""],
-        ["2 Thessalonians", false, ""],
-        ["Titus", false, ""],
-        ["Hebrews", false, ""],
-        ["2 Peter", false, ""],
-        ["Revelation", false, ""],
-    ],
-];
+    new: [
+        "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians",
+        "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians",
+        "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James",
+        "1 Peter", "2 Peter", "1 John", "2 John", "3 John", "Jude", "Revelation"
+    ]
+};
+const convert = (arr) => Object.fromEntries(arr.map(book => [book, false]));
+testaments = {
+    "Old Testament": convert(testaments.old),
+    "New Testament": convert(testaments.new)
+};
+
+let pastors = { rob: false, "mark_lehew": false, "greg_ryan": false, "other": false };
+
 let recentSermon = false;
 let pastReferences = false;
 
@@ -72,8 +77,6 @@ let sortBy = "new";
 let totalLoadedContents = 0;
 let prevVideoId = "";
 let searchIterations = 0;
-
-let other, specials, mark, greg, guests, live;
 
 let currLoadedSermons = [];
 let currPage = 0;
@@ -137,43 +140,35 @@ const betweenDates = (date) => {
 // =================================================================================================
 // Load initial sermon data.
 // =================================================================================================
+let transcripts;
 (async () => {
     try {
         contents.innerHTML = `<div id="match-count">Loading sermons...</div>`;
+        transcripts = await fetch(transcriptsUrl).then(res => res.json());
+        const books = transcripts["books"];
+        for (const book of Object.keys(books)) {
+            let testament = testaments["Old Testament"].hasOwnProperty(book) ? "Old Testament" : "New Testament";
+            testament = testament.toLowerCase().replace(" ", "");
+            
+            const bookEl = document.createElement("div");
+            bookEl.className = "book";
+            bookEl.id = book.toLowerCase().replace(" ", "");
+            bookEl.addEventListener("click", () => {
+                toggleBook(book);
+                bookEl.classList.toggle("checked");
+            });
+            bookEl.textContent = book;
 
-        const promises = [];
-        for (const testament of books) {
-            for (const book of testament) {
-                promises.push((async () => {
-                    const response = await fetch(
-                        `${
-                            prefix + book[0].toLowerCase().replace(" ", "") + suffix
-                        }`
-                    );
-                    book[2] = await response.json();
-                })());
+            document.querySelector("#books-content").insertBefore(bookEl, document.querySelector("#" + testament).nextSibling);
+        }
+        for (const section of Object.values(testaments)) {
+            for (const book of Object.keys(section)) {
+                if (!books.hasOwnProperty(book)) {
+                    delete section[book];
+                }
             }
         }
-        promises.push((async () => {
-            const dataFetch = await fetch(`${prefix}guests${suffix}`);
-            const data = await dataFetch.json();
-            mark = await data.filter((el) => el["name"].includes("Mark LeHew"));
-            greg = await data.filter((el) => el["name"].includes("Greg Ryan"));
-            guests = await data.filter(
-                (el) =>
-                    !el["name"].includes("Greg Ryan") &&
-                    !el["name"].includes("Mark LeHew")
-            );
-        })());
-        const responsesJSON = await Promise.all([
-            fetch(`${prefix}other${suffix}`),
-            fetch(`${prefix}specials${suffix}`),
-            fetch(`${prefix}live${suffix}`),
-        ]);
-        [other, specials, live] = await Promise.all(
-            responsesJSON.map((r) => r.json())
-        );
-        await Promise.all(promises);
+        booksContent.style.height = String(60 + Object.keys(books).length * 24) + "px";
         resetSearch();
     } catch (err) {
         console.error(err);
@@ -182,40 +177,40 @@ const betweenDates = (date) => {
 
 const fetchSermons = async (VideoID = "") => {
     try {
+        await transcripts;
         let finalResult = [];
         let all = false;
         if (
             !pastors["rob"] &&
-            !pastors["mark"] &&
-            !pastors["greg"] &&
-            !pastors["guests"]
+            !pastors["mark_lehew"] &&
+            !pastors["greg_ryan"] &&
+            !pastors["other"]
         )
             all = true;
         let allBooks = true;
-        books.forEach((el) => {
-            el.forEach((book) => {
-                if (book[1]) allBooks = false;
-            });
-        });
+        for (const section of Object.values(testaments)) {
+            for (const book of Object.values(section)) {
+                if (book) allBooks = false;
+            }
+        }
         if (pastors["rob"] || all) {
-            for (const testament of books) {
-                for (const book of testament) {
-                    if (book[1] || allBooks)
-                        finalResult = finalResult.concat(await book[2]);
+            for (const section of Object.values(testaments)) {
+                for (const [book, value] of Object.entries(section)) {
+                    if (value || allBooks)
+                        finalResult = finalResult.concat(transcripts["books"][book]);
                 }
             }
-            if (allBooks) finalResult = finalResult.concat(await other);
+            if (allBooks) finalResult = finalResult.concat(transcripts["other"]);
         }
-        if ((pastors["mark"] || all) && allBooks)
-            finalResult = finalResult.concat(await mark);
-        if ((pastors["greg"] || all) && allBooks)
-            finalResult = finalResult.concat(await greg);
-        if ((pastors["guests"] || all) && allBooks)
-            finalResult = finalResult.concat(await guests);
-        if (all && allBooks) finalResult = finalResult.concat(await specials);
+        for (const [guestType, guestVids] of Object.entries(transcripts["guests"])) {
+            if ((pastors[guestType] || all) && allBooks) {
+                finalResult = finalResult.concat(guestVids);
+            }
+        }
+        if (all && allBooks) finalResult = finalResult.concat(transcripts["specials"]);
         if (VideoID !== "")
             finalResult = finalResult.filter((el) => el.id === VideoID);
-        finalResult = finalResult.concat(await live);
+        if (transcripts["live"]) finalResult = finalResult.concat(transcripts["live"]);
         finalResult.sort((a, b) => new Date(b.date) - new Date(a.date));
         finalResult = finalResult.filter((el, idx) =>
             idx !== finalResult.length - 1
@@ -289,9 +284,8 @@ const loadContents = () => {
                             );
                         videoDiv += `
                             <div class="snippet">
-                                <div onclick="miniplayerLoad('${el.id}', ${
-                            instance[0]
-                        })" class="time" style="${
+                                <div onclick="miniplayerLoad('${el.id}', '${
+                            instance[0]}')" class="time" style="${
                             instance[0].split(":").length - 1 === 1 ? "font-size: 13px;" : ""
                         }">${instance[0]}</div>
                                 <div class="line">
@@ -302,16 +296,16 @@ const loadContents = () => {
                     }
                 });
                 videoDiv += `</div><div class="bracket"></div>`;
-                videoDiv += `<img onclick="miniplayerLoad('${el.id}', 0)" class="thumbnail" src="https://i.ytimg.com/vi/${el.id}/mqdefault.jpg"/>`;
+                videoDiv += `<img onclick="miniplayerLoad('${el.id}', '00:00')" class="thumbnail" src="https://i.ytimg.com/vi/${el.id}/mqdefault.jpg"/>`;
                 videoDiv += `</div></div>`;
-                const emptyRep = `<div class="video"><div class="video-grid"><div class="instances"></div><div class="bracket"></div><img class="thumbnail" onclick="miniplayerLoad('${el.id}', 0)" src="https://i.ytimg.com/vi/${el.id}/mqdefault.jpg"/></div></div>`;
+                const emptyRep = `<div class="video"><div class="video-grid"><div class="instances"></div><div class="bracket"></div><img class="thumbnail" onclick="miniplayerLoad('${el.id}', '00:00')" src="https://i.ytimg.com/vi/${el.id}/mqdefault.jpg"/></div></div>`;
                 if (videoDiv.includes(emptyRep))
                     videoDiv = videoDiv.replace(emptyRep, "");
             }
         });
         const offsetArr = contents.innerHTML.split(`.jpg" style="height: `);
         const offset = Number(offsetArr[offsetArr.length - 1].split("px")[0]);
-        const regex = `</div><div class="bracket"></div><img onclick="miniplayerLoad\\('${replaceID}', 0\\)" class="thumbnail" src="https://i.ytimg.com/vi/${replaceID}/mqdefault.jpg"${
+        const regex = `</div><div class="bracket"></div><img onclick="miniplayerLoad\\('${replaceID}', '00:00'\\)" class="thumbnail" src="https://i.ytimg.com/vi/${replaceID}/mqdefault.jpg"${
             !matchesMobile.matches ? ` style="height: ${offset}px;"` : ``
         }></div></div>$`;
         contentsTemp +=
@@ -356,9 +350,9 @@ const loadSermons = () => {
     ) {
         const el = currLoadedSermons[i];
         if (!matchesMobile.matches) {
-            sermonDiv += `<div class="sermon"><div class="container" onclick="miniplayerLoad('${el.id}', 0)"><div>${el.name}</div></div><div class="sermon-bracket"></div><img class="sermon-thumbnail" onclick="miniplayerLoad('${el.id}', 0)" src="https://i.ytimg.com/vi/${el.id}/mqdefault.jpg"/></div>`;
+            sermonDiv += `<div class="sermon"><div class="container" onclick="miniplayerLoad('${el.id}', '00:00')"><div>${el.name}</div></div><div class="sermon-bracket"></div><img class="sermon-thumbnail" onclick="miniplayerLoad('${el.id}', '00:00')" src="https://i.ytimg.com/vi/${el.id}/mqdefault.jpg"/></div>`;
         } else {
-            sermonDiv += `<div class="sermon"><div class="container" onclick="miniplayerLoad('${el.id}', 0)"><div>${el.name}</div><img src="https://i.ytimg.com/vi/${el.id}/mqdefault.jpg" class="mobile-thumbnail" onclick="miniplayerLoad('${el.id}', 0)"/></div></div>`;
+            sermonDiv += `<div class="sermon"><div class="container" onclick="miniplayerLoad('${el.id}', '00:00')"><div>${el.name}</div><img src="https://i.ytimg.com/vi/${el.id}/mqdefault.jpg" class="mobile-thumbnail" onclick="miniplayerLoad('${el.id}', '00:00')"/></div></div>`;
         }
     }
 
@@ -818,12 +812,19 @@ const miniplayerLoad = async (id, timestamp) => {
     const miniplayer = document.getElementById("miniplayer");
     const video = document.getElementById("video");
 
-    const timeSegments = timestamp.split(":");
-    const formattedTimestamp = `${timeSegments[0]}h${timeSegments[1]}m${timeSegments[2]}`;
+    const parts = timestamp.split(":").map(Number);
+    let hours = 0, minutes = 0, seconds = 0;
+    if (parts.length === 3) {
+        [hours, minutes, seconds] = parts;
+    } else if (parts.length === 2) {
+        [minutes, seconds] = parts;
+    }
+
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
     miniplayer.style.display = "block";
     document.getElementById("skeleton").style.display = "none";
-    video.src = `https://www.youtube.com/embed/${id}?autoplay=1&t=${formattedTimestamp}&enablejsapi=1`;
+    video.src = `https://www.youtube.com/embed/${id}?autoplay=1&start=${totalSeconds}&enablejsapi=1`;
 };
 
 const closeMiniplayer = () => {
@@ -950,44 +951,32 @@ const topFunction = () => {
 document.getElementById("scroll-to-top").addEventListener("click", topFunction);
 
 const toggleTestament = (testament) => {
-    books.forEach((el, idx) => {
-        if (
-            (testament === "Old Testament" && idx === 0) ||
-            (testament === "New Testament" && idx === 1)
-        ) {
-            let allTestament = true;
-            for (const book of el) {
-                if (!book[1]) allTestament = false;
-            }
-            for (const book of el) {
-                if (allTestament) {
-                    book[1] = false;
-                    document.getElementById(
-                        book[0].replace(" ", "").toLowerCase()
-                    ).className = "book";
-                } else {
-                    book[1] = true;
-                    document.getElementById(
-                        book[0].replace(" ", "").toLowerCase()
-                    ).className = "book";
-                    document.getElementById(
-                        book[0].replace(" ", "").toLowerCase()
-                    ).className = "book checked";
-                }
-            }
+    const el = testaments[testament];
+    let allTestament = true;
+    for (const book of Object.values(el)) {
+        if (!book) allTestament = false;
+    }
+    for (const book of Object.keys(el)) {
+        if (allTestament) {
+            el[book] = false;
+            document.getElementById(
+                book.replace(" ", "").toLowerCase()
+            ).className = "book";
+        } else {
+            el[book] = true;
+            console.log(book);
+            document.getElementById(
+                book.replace(" ", "").toLowerCase()
+            ).className = "book checked";
         }
-    });
+    }
     displayBooks();
     resetSearch();
 };
 
 const toggleBook = (bookInput) => {
-    for (const testament of books) {
-        for (const book of testament) {
-            if (book[0] === bookInput) {
-                book[1] = !book[1];
-            }
-        }
+    for (const section of Object.values(testaments)) {
+        section[bookInput] = !section[bookInput];
     }
     displayBooks();
     resetSearch();
@@ -995,9 +984,9 @@ const toggleBook = (bookInput) => {
 
 const displayBooks = () => {
     let booksText = "";
-    for (const testament of books) {
-        for (const book of testament) {
-            if (book[1]) booksText += `${book[0]}, `;
+    for (const section of Object.values(testaments)) {
+        for (const [book, value] of Object.entries(section)) {
+            if (value) booksText += `${book}, `;
         }
     }
     booksText = booksText.slice(0, -2);
