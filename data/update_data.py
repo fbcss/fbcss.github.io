@@ -202,7 +202,7 @@ for pl in playlists:
             ydl_opts = {
                 "cookiefile": "cookies.txt",
                 "outtmpl": os.path.join(os.getcwd(), "input.%(ext)s"),
-                "format": "worstaudio/worst",
+                "format": "worstaudio[language=en]/worst[language=en]",
                 "postprocessors": [{
                     "key": "FFmpegExtractAudio",
                     "preferredcodec": "mp3",
@@ -241,13 +241,12 @@ for pl in playlists:
                 ]
 
             video_data["transcript"] = video_transcript
-            print(video_data["transcript"])
             
             if title == "live":
                 transcripts["live"] = video_data
             else:
                 video_container.append(video_data)
 
-with open(transcripts_path, "w") as f:
-    json.dump(transcripts, f)
+            with open(transcripts_path, "w") as f:
+                json.dump(transcripts, f)
 
