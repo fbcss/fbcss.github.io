@@ -1,7 +1,4 @@
-name: Update transcripts data.
-
-permissions:
-  write:
+name: Update transcripts data
 
 on:
   workflow_dispatch:
