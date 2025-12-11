@@ -114,8 +114,7 @@ for pl in playlists:
 
     matched_book = next((b for b in bible_books if title.endswith(b)), None)
     if matched_book:
-        transcripts["books"][matched_book] = []
-        data_container = transcripts["books"][matched_book]
+        data_container = transcripts["books"].setdefault(matched_book, [])
     elif title.lower() == "specials":
         data_container = transcripts["specials"]
     elif "mark lehew" in title.lower():
@@ -125,8 +124,7 @@ for pl in playlists:
     elif title.lower() == "pastor rob mcnutt":
         data_container = sum(transcripts["books"].values(), [])
     elif title == "live":
-        transcripts["live"] = {}
-        data_container = transcripts["live"]
+        data_container = transcripts.setdefault("live", {})
     else:
         continue
 
