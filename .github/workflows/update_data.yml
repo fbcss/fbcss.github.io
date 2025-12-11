@@ -47,7 +47,7 @@ jobs:
         run: python3 ./data/update_data.py
 
       - name: Push files to GitHub
-        if: success() || failure()
+        if: ${{ success() || failure() || cancelled() }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
