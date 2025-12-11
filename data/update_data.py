@@ -106,6 +106,7 @@ playlists.append({
     }
 })
 
+print("Found " + str(len(playlists)) + " playlists.")
 for pl in playlists:
     title = pl["snippet"]["title"]
     data_container = None
@@ -176,7 +177,9 @@ for pl in playlists:
         }
         videos = iterate_api(url, params)
 
-    for video in videos:
+    print("\n" + str(len(videos)) + " videos found in '" + title + "'.")
+    for i, video in enumerate(videos):
+        print("\nProcessing video " + str(i + 1) + "/" + str(len(videos)) + ".")
         video = video["snippet"]
         video_data = {
             "name": video["title"],
