@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timedelta, UTC
 from yt_dlp import YoutubeDL
 import subprocess
+import time
 
 API_KEY = os.environ["API_KEY"]
 CHANNEL_ID = "UC6yzBy1Cof8rKcPQtx1XxKQ"
@@ -180,6 +181,8 @@ for pl in playlists:
     print("\n" + str(len(videos)) + " videos found in '" + title + "'.")
     for i, video in enumerate(videos):
         print("\nProcessing video " + str(i + 1) + "/" + str(len(videos)) + ".")
+        start_time = time.time()
+
         video = video["snippet"]
         video_data = {
             "name": video["title"],
@@ -236,7 +239,18 @@ for pl in playlists:
                 h, m, s = timestamp.split(":")
                 timestamp = f"{h + ':' if h != '00' else ''}{m}:{s}"
     
-                video_transcript[i] = [ timestamp, snippet["text"] ]
+                text = snippet["text"]
+                text = text[1:]
+                if i != len(video_transcript) - 1:
+                    next_line = video_transcript[i + 1]["text"]
+                    if not next_line.startswith(" "):
+                        split_line = next_line.split(" ", 1)
+                        text += split_line[0]
+                        next_line = " " + split_line[1]
+                        video_transcript[i + 1]["text"] = next_line
+                    text += " "
+
+                video_transcript[i] = [ timestamp, text ]
 
             video_data["transcript"] = video_transcript
             os.remove("output.json")
@@ -248,4 +262,10 @@ for pl in playlists:
 
             with open(transcripts_path, "w") as f:
                 json.dump(transcripts, f)
+
+            end_time = time.time()
+            elapsed = int(end_time - start_time)
+            minutes = elapsed // 60
+            seconds = elapsed % 60
+            print(f"\nCompleted video in {minutes:02d}:{seconds:02d}")
 
