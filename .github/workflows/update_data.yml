@@ -18,7 +18,7 @@ jobs:
         run: |
           sudo apt update && sudo apt install build-essential ffmpeg cmake
           pip install yt-dlp requests
-          curl -fsSL https://deno.land/install.sh | sh
+          curl -fsSL https://deno.land/install.sh | sh -s -- -y
 
       - name: Clone whisper.cpp
         run: git clone https://github.com/ggerganov/whisper.cpp
