@@ -1,5 +1,8 @@
 name: Update transcripts data.
 
+permissions:
+  write:
+
 on:
   workflow_dispatch:
 
@@ -47,6 +50,7 @@ jobs:
         run: python3 ./data/update_data.py
 
       - name: Push files to GitHub
+        if: success() || failure()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
