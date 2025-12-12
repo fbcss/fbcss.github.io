@@ -6,4 +6,4 @@
 
 **Can you filter results?**: Absolutely! You can filter by date, book of the Bible, and pastors. You can even sort results by new, old, and top (video with the most results of keyword).
 
-**What are the prerequisites?**: There are none, except for a device and maybe a web browser. Just go to "https://cosmocreeper.github.io/fbcss/".
+**What are the prerequisites?**: There are none, except for a device and maybe a web browser. Just go to "https://fbcss.github.io/".
