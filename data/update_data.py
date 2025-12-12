@@ -184,10 +184,17 @@ for pl in playlists:
         start_time = time.time()
 
         video = video["snippet"]
+
+        published_year = video["publishedAt"].split("-")[0]
+        title_dates = video["title"].split(" ")[0].split("-")
+        title_month = title_dates[1]
+        title_day = title_dates[2]
+        final_date = published_year + "-" + title_month + "-" + title_day
+
         video_data = {
             "name": video["title"],
             "id": video["resourceId"]["videoId"],
-            "date": video["publishedAt"].split("T")[0]
+            "date": final_date
         }
         video_container = data_container
 
