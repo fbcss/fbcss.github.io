@@ -185,16 +185,12 @@ for pl in playlists:
 
         video = video["snippet"]
 
-        published_year = video["publishedAt"].split("-")[0]
-        title_dates = video["title"].split(" ")[0].split("-")
-        title_month = title_dates[1] if len(title_dates) > 1 else ""
-        title_day = title_dates[2] if len(title_dates) > 2 else ""
-        final_date = published_year + "-" + title_month + "-" + title_day
+        timestamp = video["title"].split(" ")[0]
 
         video_data = {
             "name": video["title"],
             "id": video["resourceId"]["videoId"],
-            "date": final_date
+            "date": timestamp
         }
         video_container = data_container
 
