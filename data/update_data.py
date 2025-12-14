@@ -5,6 +5,17 @@ from datetime import datetime, timedelta, UTC
 from yt_dlp import YoutubeDL
 import subprocess
 import time
+import signal
+import sys
+
+def signal_handler(sig, frame):
+    print("You ended the process.")
+    subprocess.run(["git", "add", "data/transcripts.json"])
+    subprocess.run(["git", "commit", "-m", "Update transcription"])
+    subprocess.run(["git", "push", "origin", "main"])
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 API_KEY = os.environ["API_KEY"]
 CHANNEL_ID = "UC6yzBy1Cof8rKcPQtx1XxKQ"
