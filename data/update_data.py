@@ -124,7 +124,7 @@ for pl in playlists:
     elif isGuestSpeakers:
         data_container = transcripts["guests"]
     elif title.lower() == "pastor rob mcnutt":
-        data_container = sum(transcripts["books"].values(), [])
+        data_container = sum(transcripts["books"].values(), transcripts["other"])
     elif title == "live":
         data_container = transcripts.setdefault("live", {})
     else:
