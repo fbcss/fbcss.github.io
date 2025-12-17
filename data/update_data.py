@@ -103,7 +103,7 @@ url = url_prefix + "playlists"
 params = {
     "part": "snippet",
     "channelId": CHANNEL_ID,
-    "maxResults": 50,
+    "maxResults": 1000,
     "key": API_KEY
 }
 playlists = iterate_api(url, params)
@@ -148,7 +148,7 @@ for pl in playlists:
             "order": "date",
             "part": "snippet",
             "channelId": CHANNEL_ID,
-            "maxResults": 8,
+            "maxResults": 1000,
             "key": API_KEY
         }
 
@@ -184,7 +184,7 @@ for pl in playlists:
         params = {
             "part": "snippet",
             "playlistId": pl["id"],
-            "maxResults": 50,
+            "maxResults": 1000,
             "key": API_KEY
         }
         videos = iterate_api(url, params)
