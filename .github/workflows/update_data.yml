@@ -69,6 +69,11 @@ jobs:
           git config --global user.name "fbcss"
           git config --global user.email "fbcss@fbcss.github.io"
           git add data/transcripts.json
-          git commit -m "Automated transcription"
-          git pull --rebase origin main
-          git push -u origin main
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Automated transcription"
+            git pull --rebase origin main
+            git push -u origin main
+          fi
