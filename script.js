@@ -211,7 +211,7 @@ const fetchSermons = async (VideoID = "") => {
         if (VideoID !== "")
             finalResult = finalResult.filter((el) => el.id === VideoID);
         if (transcripts["live"]) finalResult = finalResult.concat(transcripts["live"]);
-        finalResult.sort((a, b) => new Date(b.date) - new Date(a.date));
+        finalResult.sort((a, b) => b.date.localeCompare(a.date));
         finalResult = finalResult.filter((el, idx) =>
             idx !== finalResult.length - 1
                 ? el.date !== finalResult[idx + 1].date
