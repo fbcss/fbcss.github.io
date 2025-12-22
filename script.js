@@ -628,8 +628,7 @@ const togglePastors = () => {
 document
     .getElementById("pastors-button")
     .addEventListener("click", () => togglePastors());
-const PastorsArr = ["rob", "mark", "greg", "guests"];
-for (const pastor of PastorsArr) {
+for (const pastor of Object.keys(pastors)) {
     document.getElementById(pastor).addEventListener("click", () => {
         togglePastor(pastor);
     });
