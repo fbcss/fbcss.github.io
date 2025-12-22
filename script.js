@@ -176,7 +176,7 @@ let transcripts;
                 }
             }
         }
-        booksContent.style.height = String(60 + Object.keys(transcripts["books"]).length * 24) + "px";
+        booksContent.style.height = String(85 + Object.keys(transcripts["books"]).length * 20) + "px";
         resetSearch();
     } catch (err) {
         console.error(err);
