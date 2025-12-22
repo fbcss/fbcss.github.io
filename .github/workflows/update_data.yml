@@ -12,9 +12,6 @@ on:
     - cron: '3 7 * * *'
     # Every December 24th at 7:13 PM EST (converted to UTC).
     - cron: '13 0 24 12 *'
-  push:
-    branches:
-      - main
 
 jobs:
   build:
