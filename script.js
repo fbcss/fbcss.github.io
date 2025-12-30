@@ -145,10 +145,12 @@ let transcripts;
     try {
         contents.innerHTML = `<div id="match-count">Loading sermons...</div>`;
         transcripts = await fetch(transcriptsUrl).then(res => res.json());
-        const books = transcripts["books"];
-        for (const book of Object.keys(books)) {
-            let testament = testaments["Old Testament"].hasOwnProperty(book) ? "Old Testament" : "New Testament";
-            testament = testament.toLowerCase().replace(" ", "");
+
+        const oldTestament = Object.keys(testaments["Old Testament"]);
+        const newTestament = Object.keys(testaments["New Testament"]);
+        const orderedBooks = [...oldTestament, ...newTestament];
+        for (let book of orderedBooks) {
+            if (!transcripts["books"].hasOwnProperty(book)) continue;
             
             const bookEl = document.createElement("div");
             bookEl.className = "book";
@@ -159,16 +161,22 @@ let transcripts;
             });
             bookEl.textContent = book;
 
-            document.querySelector("#books-content").insertBefore(bookEl, document.querySelector("#" + testament).nextSibling);
+            const booksContainer = document.querySelector("#books-content");
+            let testament = testaments["Old Testament"].hasOwnProperty(book) ? "Old Testament" : "New Testament";
+            if (testament === "Old Testament") {
+                booksContainer.insertBefore(bookEl, booksContainer.querySelector("hr"))
+            } else {
+                booksContainer.appendChild(bookEl);
+            }
         }
         for (const section of Object.values(testaments)) {
             for (const book of Object.keys(section)) {
-                if (!books.hasOwnProperty(book)) {
+                if (!transcripts["books"].hasOwnProperty(book)) {
                     delete section[book];
                 }
             }
         }
-        booksContent.style.height = String(60 + Object.keys(books).length * 24) + "px";
+        booksContent.style.height = String(85 + Object.keys(transcripts["books"]).length * 20) + "px";
         resetSearch();
     } catch (err) {
         console.error(err);
@@ -211,7 +219,7 @@ const fetchSermons = async (VideoID = "") => {
         if (VideoID !== "")
             finalResult = finalResult.filter((el) => el.id === VideoID);
         if (transcripts["live"]) finalResult = finalResult.concat(transcripts["live"]);
-        finalResult.sort((a, b) => new Date(b.date) - new Date(a.date));
+        finalResult.sort((a, b) => b.date.localeCompare(a.date));
         finalResult = finalResult.filter((el, idx) =>
             idx !== finalResult.length - 1
                 ? el.date !== finalResult[idx + 1].date
@@ -628,8 +636,7 @@ const togglePastors = () => {
 document
     .getElementById("pastors-button")
     .addEventListener("click", () => togglePastors());
-const PastorsArr = ["rob", "mark", "greg", "guests"];
-for (const pastor of PastorsArr) {
+for (const pastor of Object.keys(pastors)) {
     document.getElementById(pastor).addEventListener("click", () => {
         togglePastor(pastor);
     });
