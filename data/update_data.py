@@ -137,7 +137,7 @@ for pl in playlists:
     elif title.lower() == "pastor rob mcnutt":
         data_container = sum(transcripts["books"].values(), transcripts["other"])
     elif title == "live":
-        data_container = transcripts.setdefault("live", {})
+        data_container = [transcripts.setdefault("live", {})]
     else:
         continue
 
@@ -166,8 +166,7 @@ for pl in playlists:
                 video_title = video_data["title"]
                 if (
                     "live!" in video_title.lower() and
-                    last_sunday() in video_title and
-                    not contains_video_with_date(transcripts, last_sunday())
+                    last_sunday() in video_title
                 ):
                     video_data["publishedAt"] = video_data["publishTime"]
                     video_data["resourceId"] = {
