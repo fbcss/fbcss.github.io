@@ -385,8 +385,8 @@ const search = async () => {
     if (keyword === "") {
         let sortedSermons = removeDuplicates(await fetchSermons());
         sortBy === "old"
-            ? sortedSermons.sort((a, b) => new Date(a.date) - new Date(b.date))
-            : sortedSermons.sort((a, b) => new Date(b.date) - new Date(a.date));
+            ? sortedSermons.sort((a, b) => a.date.localeCompare(b.date))
+            : sortedSermons.sort((a, b) => b.date.localeCompare(a.date));
 
         currLoadedSermons = sortedSermons.filter((sermon) => {
             return betweenDates(new Date(sermon.date));
