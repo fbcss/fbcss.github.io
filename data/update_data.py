@@ -166,7 +166,8 @@ for pl in playlists:
                 video_title = video_data["title"]
                 if (
                     "live!" in video_title.lower() and
-                    last_sunday() in video_title
+                    last_sunday() in video_title and
+                    not contains_video_with_date(transcripts, last_sunday())
                 ):
                     video_data["publishedAt"] = video_data["publishTime"]
                     video_data["resourceId"] = {
