@@ -88,8 +88,8 @@ def contains_video_with_date(data, target_date):
             if data["date"] == target_date:
                 return True
 
-        for value in data.values():
-            if contains_video_with_date(value, target_date):
+        for key, value in data.items():
+            if contains_video_with_date(value, target_date) and key != "live":
                 return True
 
     elif isinstance(data, list):
